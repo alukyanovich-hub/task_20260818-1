@@ -23,10 +23,15 @@ so it doubles as a running decision log.
   per "avoid overengineering". Kept: `drf-spectacular` for OpenAPI/Swagger
   docs (directly satisfies the "API documentation" requirement for free),
   `python-decouple` for env config, `gunicorn` for serving, `psycopg2`.
-- **AI provider**: Anthropic Claude API (`anthropic` Python SDK), matching
-  the tool used to build this project. Categorisation service is written
-  behind a small interface so the provider is swappable. When
-  `ANTHROPIC_API_KEY` is not set (e.g. a reviewer running `docker compose
+- **AI provider**: OpenAI API (`openai` Python SDK), selected via
+  `OPENAI_API_KEY`/`OPENAI_MODEL` (default `gpt-4o-mini`). Originally
+  Anthropic (matching the tool used to build the project), but switched
+  because enabling billing on Anthropic required identity/government
+  verification the user couldn't complete, whereas an OpenAI key was
+  already available. Categorisation service is written behind a small
+  interface (`categorize_batch`/`source`) so the provider is swappable —
+  this was in fact exercised for real, not just theoretical. When
+  `OPENAI_API_KEY` is not set (e.g. a reviewer running `docker compose
   up` with no secrets), the service falls back to a deterministic
   keyword-rule categorizer so the stack is fully runnable out of the box.
   This trade-off is documented in the README.
@@ -87,7 +92,7 @@ so it doubles as a running decision log.
 - `GET /api/v1/transactions/{id}/` — detail.
 - `POST /api/v1/transactions/import/` — multipart CSV upload matching the
   provided sample's columns, bulk-creates + categorises.
-- Categorisation service: Anthropic-backed, prompt stored in
+- Categorisation service: OpenAI-backed, prompt stored in
   `docs/AI_PROMPTS.md`, with description-level caching (many rows share
   an identical description, so we categorise each unique description once
   and reuse the result) and a keyword-rule fallback.
@@ -116,7 +121,7 @@ so it doubles as a running decision log.
   schema/Swagger/Redoc). Trimmed `INSTALLED_APPS`/middleware to the
   minimum (no auth app, no Celery/Redis). `docker-compose.yml` needs zero
   configuration to run — every setting has a default baked in, `.env` is
-  optional and only needed to set a real `ANTHROPIC_API_KEY` or override
+  optional and only needed to set a real `OPENAI_API_KEY` or override
   DB credentials. Verified `docker compose up --build`: Postgres becomes
   healthy, Django migrations for the built-in apps apply, and
   `/admin/login/`, `/api/v1/schema/`, `/api/v1/doc/` all return 200.

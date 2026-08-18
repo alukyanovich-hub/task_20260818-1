@@ -116,5 +116,5 @@ SPECTACULAR_SETTINGS = {
 
 # --- AI categorisation -----------------------------------------------------
 # See apps/transactions/services/categorizer.py and docs/AI_PROMPTS.md.
-ANTHROPIC_API_KEY = config('ANTHROPIC_API_KEY', default='')
-ANTHROPIC_MODEL = config('ANTHROPIC_MODEL', default='claude-haiku-4-5-20251001')
+OPENAI_API_KEY = config('OPENAI_API_KEY', default='')
+OPENAI_MODEL = config('OPENAI_MODEL', default='gpt-4o-mini')
