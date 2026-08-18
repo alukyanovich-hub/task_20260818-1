@@ -111,4 +111,20 @@ so it doubles as a running decision log.
 
 ## Progress log
 
-- _(filled in as steps complete)_
+- **Step 1 (done)** — Django+DRF skeleton bootstrapped at repo root under
+  `src/` (`core` project, `apps.api.v1` router with drf-spectacular
+  schema/Swagger/Redoc). Trimmed `INSTALLED_APPS`/middleware to the
+  minimum (no auth app, no Celery/Redis). `docker-compose.yml` needs zero
+  configuration to run — every setting has a default baked in, `.env` is
+  optional and only needed to set a real `ANTHROPIC_API_KEY` or override
+  DB credentials. Verified `docker compose up --build`: Postgres becomes
+  healthy, Django migrations for the built-in apps apply, and
+  `/admin/login/`, `/api/v1/schema/`, `/api/v1/doc/` all return 200.
+- **Step 2 (done)** — `apps.transactions` app added with the `Transaction`
+  model (`external_id` nullable+unique for dedup on CSV import,
+  `category`/`category_source` blank until the categoriser runs) and
+  `Category`/`TransactionType`/`CategorySource` as `TextChoices`.
+  Registered in Django admin. Verified: `makemigrations` produced a
+  single clean `0001_initial`, `migrate` applied it, and a shell-created
+  `Transaction` round-trips correctly; admin site registry confirms the
+  model is registered.
