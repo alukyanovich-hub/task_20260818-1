@@ -1,0 +1,42 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_NAME:-sous}
+      POSTGRES_USER: ${DB_USER:-sous}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-sous}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-sous}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  web:
+    build: .
+    restart: unless-stopped
+    environment:
+      DEBUG: ${DEBUG:-True}
+      SECRET_KEY: ${SECRET_KEY:-dev-secret-key-not-for-production}
+      ALLOWED_HOSTS: ${ALLOWED_HOSTS:-*}
+      DB_HOST: postgres
+      DB_NAME: ${DB_NAME:-sous}
+      DB_USER: ${DB_USER:-sous}
+      DB_PASSWORD: ${DB_PASSWORD:-sous}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      ANTHROPIC_MODEL: ${ANTHROPIC_MODEL:-claude-haiku-4-5-20251001}
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command: >
+      sh -c "python manage.py migrate --noinput &&
+             python manage.py runserver 0.0.0.0:8000"
+
+volumes:
+  postgres_data:
